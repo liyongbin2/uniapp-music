@@ -1,0 +1,75 @@
+{
+  "pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "发现",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/my/index",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/follow/index",
+      "style": {
+        "navigationBarTitleText": "关注",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/community/index",
+      "style": {
+        "navigationBarTitleText": "社区",
+        "navigationStyle": "custom"
+      }
+    }
+  ],
+  "subPackages": [{
+    "root": "otherSubPackages",
+    "pages": [{
+      "path": "pages/search/index",
+      "style": {
+        "navigationBarTitleText": "搜索",
+        "navigationStyle": "custom"
+      }
+    }]
+  }],
+  "tabBar": {
+    "color": "#ffffff",
+    "selectedColor": "#E93323",
+    "borderStyle": "black",
+    "backgroundColor": "#201f26",
+    "list": [{
+      "pagePath": "pages/index/index",
+      "text": "发现",
+      "iconPath": "/static/images/tabBar/discover.png",
+      "selectedIconPath": "/static/images/tabBar/discover-active.png"
+    }, {
+      "pagePath": "pages/my/index",
+      "text": "我的",
+      "iconPath": "/static/images/tabBar/music.png",
+      "selectedIconPath": "/static/images/tabBar/music-active.png"
+    }, {
+      "pagePath": "pages/follow/index",
+      "text": "关注",
+      "iconPath": "/static/images/tabBar/attention.png",
+      "selectedIconPath": "/static/images/tabBar/attention-active.png"
+    }, {
+      "pagePath": "pages/community/index",
+      "text": "社区",
+      "iconPath": "/static/images/tabBar/community.png",
+      "selectedIconPath": "/static/images/tabBar/community-active.png"
+    }]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  }
+}
