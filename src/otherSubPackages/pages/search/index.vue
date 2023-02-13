@@ -24,13 +24,13 @@
       </view>
     </view>
     <!-- 广告位置 -->
-    <view :class="`ad ${isCloseAd && 'puff-out-center'}`">
+    <view class="ad" v-if="!isCloseAd">
       <image
         class="w-full h-full rounded-md"
         mode="widthFix"
         src="https://image.woshipm.com/wp-files/2018/04/z8rOb4Ed28OkfWXv0Vd5.jpg"
       ></image>
-      <view class="absolute top-1 right-1" @click="handleCloseAd">
+      <view class="absolute top-1 right-1" @click="handleOpenPop">
         <FontIcon icon="&#xe609;" size="32rpx" />
       </view>
     </view>
@@ -55,13 +55,16 @@
     </view>
     <!-- 歌榜 -->
     <scroll-view
+      id="scrollView"
       :scroll-x="true"
       :scroll-y="false"
+      :scroll-left="scrollTopListViewLeft"
+      scroll-with-animation
       class="p-[20rpx] w-auto"
+      style="white-space: nowrap;"
       @scroll="handleTouchmove"
     >
       <view
-        id="topList"
         class="flex gap-[20rpx] items-center flex-nowrap"
         @touchend="handleTouchEnd"
         @touchstart="handleTouchStart"
@@ -84,10 +87,36 @@
             </view>
           </view>
           <!-- 榜单列表 -->
-          <view class="m-[20rpx]">榜单列表</view>
+          <view class="m-[20rpx] flex flex-col gap-[20rpx]">
+            <view class="top-list-item" v-for="(item, idx) in 13" :key="idx">
+              <text class="ranking">{{ idx + 1 }}</text>
+              <text>歌曲{{ item }}</text>
+            </view>
+          </view>
         </view>
       </view>
     </scroll-view>
+    <Popup
+      officeTop="40%"
+      v-model:open="openPop"
+      :customStyle="{
+        background: '#1c1c1e',
+        width: '80%',
+        padding: '40rpx 30rpx'
+      }"
+    >
+      <view class="w-full h-full relative">
+        <view class="text-3xl mb-[40rpx] font-bold">选择理由，精准屏蔽</view>
+        <view class="flex flex-col gap-[30rpx]">
+          <text class="text-xl w-fit text-[#a1a2a4]" v-for="item in closeAdReason" :key="item">
+            {{ item }}
+          </text>
+        </view>
+        <view class="bg-[#98989a] rounded-full close-pop-btn" @tap="handleCloseAd">
+           <FontIcon icon="&#xeaf2;" size="26rpx" />
+        </view>
+      </view>
+    </Popup>
   </view>
 </template>
 
@@ -96,6 +125,10 @@ import TopBarSlot from "@/components/TopBarSlot";
 import FontIcon from "@/components/FontIcon";
 
 import { ref, getCurrentInstance, onMounted } from "vue";
+
+import Popup from "@/components/Popup"
+
+import {debounced} from "@/utils/utils"
 
 export type CategoryListType = {
   icon: string;
@@ -127,12 +160,20 @@ const categoryList = ref<CategoryListType[]>([
 ]);
 const isCloseAd = ref<boolean>(false);
 const topListDomInfo = ref<any>({});
+const scrollViewDomInfo = ref<any>(null);
 const showTopListItemIndex = ref<number>(0); // 榜单item完全显示的下标
-const topListMoveFirstLeftPosition = ref<number | null>(null);
-const topListMoveEndLeftPosition = ref<number | null>(null);
+const scrollDistance = ref<number>(0)
+const scrollTopListViewLeft = ref<number>(0)
+const openPop = ref<boolean>(true); // 弹窗
+const closeAdReason = ref<string[]>(["不感兴趣","看过了","虚假内容","素材质量差"])
 
+function handleOpenPop() {
+  console.log("打开弹窗");
+  openPop.value = true
+}
 function handleCloseAd() {
   console.log("点击关闭广告");
+  openPop.value = false;
   isCloseAd.value = true;
 }
 
@@ -141,7 +182,6 @@ onMounted(() => {
 });
 
 function getTopListAllDomInfo() {
-  console.log("香蕉");
   const _this = getCurrentInstance();
   const query = uni.createSelectorQuery().in(_this);
   for (let i = 0; i < 6; i++) {
@@ -153,73 +193,43 @@ function getTopListAllDomInfo() {
       })
       .exec();
   }
+  query
+    .select("#scrollView")
+    .fields(
+      {
+        size: true,
+        rect: true,
+        scrollOffset: true
+      },
+      data => {
+        if (!scrollViewDomInfo.value) scrollViewDomInfo.value = data;
+      }
+    )
+    .exec();
   console.log("查看节点信息：", topListDomInfo.value);
 }
 
 // 开始滑动榜单
-function handleTouchmove(e: any) {
+const handleTouchmove = debounced((e: any) => {
   console.log("开始滑动", e);
   const { scrollLeft } = e.detail;
-  if (topListMoveFirstLeftPosition.value === null)
-    topListMoveFirstLeftPosition.value = scrollLeft;
-  topListMoveEndLeftPosition.value = scrollLeft;
-}
+  scrollDistance.value = scrollLeft
+
+},200)
 // 榜单触摸开始
 function handleTouchStart(e: any) {
   console.log("榜单触摸开始", e);
-  topListMoveFirstLeftPosition.value = null;
-  topListMoveEndLeftPosition.value = null;
+
 }
 // 榜单触摸结束
 function handleTouchEnd(e: any) {
   console.log("榜单触摸结束", e);
-  calcTopListMoveDistance();
+  handleTopScrollView()
 }
-// 计算榜单滑动距离（左滑或者右滑）
-function calcTopListMoveDistance(): void {
-  console.log(
-    "查看123：",
-    topListMoveFirstLeftPosition.value,
-    topListMoveEndLeftPosition.value
-  );
-  if (
-    topListMoveFirstLeftPosition.value === null ||
-    topListMoveEndLeftPosition.value === null
-  )
-    return;
-  const distance =
-    topListMoveEndLeftPosition.value - topListMoveFirstLeftPosition.value;
-  console.log("滑动的距离为：", distance);
-  const showActiveIndex = calcShowTopListItemIndex(distance);
-  console.log("要显示的索引下标：", showActiveIndex);
-  showTopListItemIndex.value = showActiveIndex;
-}
-
-function calcShowTopListItemIndex(distance: number): number {
-  const activeDomItem =
-    topListDomInfo.value[`#topList${showTopListItemIndex.value}`];
-  console.log("查看这个Item：", activeDomItem);
-  let activeIndex = showTopListItemIndex.value;
-  let addCount: number = 0;
-  if (activeDomItem) {
-    if (
-      Math.abs(distance) > activeDomItem.width / 2 &&
-      distance < activeDomItem
-    )
-      addCount = 1;
-    else if (Math.abs(distance) > activeDomItem.width) addCount = 2;
-    if (distance > 0) {
-      // 右滑动
-      activeIndex += addCount;
-    } else {
-      // 左滑动
-      activeIndex -= addCount;
-    }
-    if (activeIndex > topListDomInfo.value.length - 1)
-      activeIndex = topListDomInfo.value.length - 1;
-    else if (activeIndex < 0) activeIndex = 0;
-  }
-  return activeIndex;
+function handleTopScrollView() {
+  const i = Math.round(scrollDistance.value/(topListDomInfo.value[`#topList${showTopListItemIndex.value}`]?.width ?? 260))
+  showTopListItemIndex.value = i
+  scrollTopListViewLeft.value = topListDomInfo.value[`#topList${showTopListItemIndex.value}`].left - 10
 }
 </script>
 
@@ -245,5 +255,29 @@ function calcShowTopListItemIndex(distance: number): number {
   bottom: 0;
   transform: translate3d(-50%, 0, 0);
   background-color: #3b3b42;
+}
+.top-list-item {
+  @apply flex gap-[20rpx];
+  color: #a1a2a4;
+  text:first-child {
+    @apply font-bold;
+  }
+  &:nth-of-type(-n + 3) {
+    text:first-child {
+      color: #c8343b;
+    }
+    text:last-child {
+      color: #ffffff;
+    }
+  }
+}
+.close-pop-btn {
+  @apply absolute text-center;
+  left: 50%;
+  bottom: -200rpx;
+  transform: translateX(-50%);
+  line-height: 50rpx;
+  width: 50rpx;
+  height: 50rpx;
 }
 </style>

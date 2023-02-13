@@ -2,6 +2,15 @@ module.exports = {
   content: ['./index.html', './src/**/*.{html,js,ts,jsx,tsx,vue}'],
   theme: {
     extend: {
+      fontSize: {
+        sm: '20rpx',
+        base: '24rpx',
+        xl: '26rpx',
+        '2xl': '28rpx',
+        '3xl': '30rpx',
+        '4xl': '32rpx',
+        '5xl': '36rpx',
+      },
       animation: {
         puffOutCenter: "puff-out-center 1s cubic-bezier(0.165, 0.840, 0.440, 1.000) both"
       },
