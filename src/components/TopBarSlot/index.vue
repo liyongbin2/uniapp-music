@@ -1,14 +1,8 @@
 <!-- 自定义顶部时用到 -->
 <template>
-  <view
-    class="container flex flex-col justify-end"
-    :style="{
-      height: `${navHeight}px`,
-      background: `linear-gradient(180deg, rgba(41,28,37,0.6) 14%, rgba(34,27,35,0.6) 91%)`
-    }"
-  >
+  <view class="container flex flex-col justify-end" :style="containerStyle">
     <view
-      class="mb-[6px]"
+      class="mb-[6px] box-border"
       :style="{
         height: `${menuBottomInfo.height}px`,
         marginRight: `${menuBottomInfo.width +
@@ -26,9 +20,16 @@ import { useStore } from "vuex";
 
 import router from "@/utils/router";
 const store = useStore();
-const navHeight = computed(() => store.getters.getNavHeight);
 const systemInfo = computed(() => store.getters.getSystemInfo);
 const menuBottomInfo = computed(() => store.getters.getMenuButtonInfo);
+const navHeight = computed(() => store.getters.getNavHeight);
+const containerStyle = ref<any>({
+  height: `${navHeight.value}px`,
+  background: `linear-gradient(180deg, rgba(41,28,37,0.6) 14%, rgba(34,27,35,0.6) 91%)`,
+  // #ifdef H5
+  marginTop: "30rpx"
+  // #endif
+});
 </script>
 
 <style lang="scss" scoped></style>

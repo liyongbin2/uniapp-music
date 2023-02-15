@@ -1,10 +1,12 @@
 <template>
   <view class="content">
     <view class="text-pink-900">当前系统主题123:{{ themeRef }}</view>
+    <TabBar/>
   </view>
 </template>
 
 <script setup lang="ts">
+  import TabBar from "@/components/TabBar";
 import { ref, onBeforeUnmount } from 'vue';
 const title = ref('Hello');
 const themeRef = ref(uni.getSystemInfoSync().theme);

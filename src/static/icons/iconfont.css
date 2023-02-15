@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 3885819 */
-  src: url('iconfont.woff2?t=1676283778493') format('woff2'),
-       url('iconfont.woff?t=1676283778493') format('woff'),
-       url('iconfont.ttf?t=1676283778493') format('truetype');
+  src: url('iconfont.woff2?t=1676431279245') format('woff2'),
+       url('iconfont.woff?t=1676431279245') format('woff'),
+       url('iconfont.ttf?t=1676431279245') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,10 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-youjiantou:before {
+  content: "\e6b5";
 }
 
 .icon-guanbi1:before {

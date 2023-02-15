@@ -1,6 +1,6 @@
 <template>
-  <text
-    @tab="emit('click')"
+  <span
+    @tap="emit('click')"
     :class="
       `iconfont text-white ${className}`
     "
@@ -8,9 +8,9 @@
       fontSize: size,
       color
     }"
+    v-html="icon"
   >
-    {{ icon }}
-  </text>
+  </span>
 </template>
 
 <script setup lang="ts">

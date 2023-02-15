@@ -1,15 +1,43 @@
 <template>
   <view class="container">
     <TopBarSlot>
-      <view class="flex items-center gap-[20rpx] mx-[20rpx]">
-        <FontIcon icon="&#xe64e;" size="32rpx" />
+      <view
+        class="search-container relative flex items-center gap-[20rpx] mx-[20rpx]"
+      >
+        <FontIcon icon="&#xe64e;" size="32rpx" @click="back" />
         <view
           class="py-[10rpx] px-[20rpx] flex-1 flex items-center gap-[20rpx] rounded-3xl bg-[#3a333b]"
         >
           <FontIcon icon="&#xe61f;" size="28rpx" />
-          <input placeholder="哈哈" />
+          <input
+            placeholder="输入歌曲/歌手/专辑"
+            @focus="handleOpenOrCloseSearchPanel"
+            v-model="searchKey"
+          />
+          <FontIcon
+            v-if="showSearchPanel"
+            icon="&#xeaf2;"
+            size="28rpx"
+            @click="handleOpenOrCloseSearchPanel(false)"
+          />
         </view>
         <view>搜索</view>
+        <view
+          class="search-panel p-[20rpx] flex flex-col gap-[30rpx]"
+          v-if="showSearchPanel"
+          :style="{
+            top: `${navHeight}px`
+          }"
+        >
+          <view
+            class="flex gap-[20rpx] py-[16rpx] w-full"
+            v-for="item in 6"
+            :key="item"
+          >
+            <FontIcon icon="&#xe61f;" size="28rpx" />
+            <text>泰勒{{ item }}</text>
+          </view>
+        </view>
       </view>
     </TopBarSlot>
     <!-- 分类 -->
@@ -98,7 +126,8 @@
     </scroll-view>
     <Popup
       officeTop="40%"
-      v-model:open="openPop"
+      :open="openPop"
+      @close="handleClosePop"
       :customStyle="{
         background: '#1c1c1e',
         width: '80%',
@@ -108,12 +137,20 @@
       <view class="w-full h-full relative">
         <view class="text-3xl mb-[40rpx] font-bold">选择理由，精准屏蔽</view>
         <view class="flex flex-col gap-[30rpx]">
-          <text class="text-xl w-fit text-[#a1a2a4]" v-for="item in closeAdReason" :key="item">
+          <text
+            class="text-xl w-fit text-[#a1a2a4]"
+            v-for="item in closeAdReason"
+            :key="item"
+            @tap="handleCloseAd"
+          >
             {{ item }}
           </text>
         </view>
-        <view class="bg-[#98989a] rounded-full close-pop-btn" @tap="handleCloseAd">
-           <FontIcon icon="&#xeaf2;" size="26rpx" />
+        <view
+          class="bg-[#98989a] rounded-full close-pop-btn"
+          @tap="handleCloseAd"
+        >
+          <FontIcon icon="&#xeaf2;" size="26rpx" />
         </view>
       </view>
     </Popup>
@@ -124,18 +161,21 @@
 import TopBarSlot from "@/components/TopBarSlot";
 import FontIcon from "@/components/FontIcon";
 
-import { ref, getCurrentInstance, onMounted } from "vue";
+import { ref, getCurrentInstance, onMounted,computed } from "vue";
+import { useStore } from "vuex";
 
 import Popup from "@/components/Popup"
 
 import {debounced} from "@/utils/utils"
+import {back} from "@/utils/router"
 
 export type CategoryListType = {
   icon: string;
   cateName: string;
   path: string;
 };
-
+const store = useStore();
+const navHeight = computed(() => store.getters.getNavHeight);
 const categoryList = ref<CategoryListType[]>([
   {
     icon: "../../../static/images/singer.png",
@@ -164,8 +204,16 @@ const scrollViewDomInfo = ref<any>(null);
 const showTopListItemIndex = ref<number>(0); // 榜单item完全显示的下标
 const scrollDistance = ref<number>(0)
 const scrollTopListViewLeft = ref<number>(0)
-const openPop = ref<boolean>(true); // 弹窗
+const openPop = ref<boolean>(false); // 弹窗
 const closeAdReason = ref<string[]>(["不感兴趣","看过了","虚假内容","素材质量差"])
+const searchKey = ref<string>("")
+const showSearchPanel = ref<boolean>(false)
+
+
+onMounted(() => {
+  getTopListAllDomInfo();
+});
+
 
 function handleOpenPop() {
   console.log("打开弹窗");
@@ -173,13 +221,19 @@ function handleOpenPop() {
 }
 function handleCloseAd() {
   console.log("点击关闭广告");
+  handleClosePop()
+  setTimeout(function() {
+    isCloseAd.value = true;
+  }, 500);
+}
+function handleClosePop() {
   openPop.value = false;
-  isCloseAd.value = true;
 }
 
-onMounted(() => {
-  getTopListAllDomInfo();
-});
+
+function handleOpenOrCloseSearchPanel(open?:boolean=true):void {
+  showSearchPanel.value = open
+}
 
 function getTopListAllDomInfo() {
   const _this = getCurrentInstance();
@@ -234,6 +288,16 @@ function handleTopScrollView() {
 </script>
 
 <style lang="scss" scoped>
+.search-container {
+  .search-panel {
+    @apply fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    background-color: #1b1b25;
+  }
+}
 .ad {
   @apply m-[20rpx] relative;
 }

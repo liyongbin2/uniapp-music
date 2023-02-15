@@ -1,28 +1,41 @@
 <script setup lang="ts">
-import { onLaunch, onShow, onHide } from '@dcloudio/uni-app'
-import {computed} from "vue"
-import {useStore} from "vuex"
+import { onLaunch, onShow, onHide } from "@dcloudio/uni-app";
+import { computed } from "vue";
+import { useStore } from "vuex";
 
-const store = useStore()
+const store = useStore();
 
-const navHeight = computed(() => store.getters.getNavHeight)
+const navHeight = computed(() => store.getters.getNavHeight);
 onLaunch(() => {
+  let systemInfo: any = {};
   uni.getSystemInfo({
-  	success: function(res) {
-      store.dispatch("addSystemInfoAction",res)
-      store.dispatch("addNavHeightAction",(res?.statusBarHeight ?? 0) * (750 / res.windowWidth))
-  	}
+    success: function(res) {
+      systemInfo = res;
+      store.dispatch("addSystemInfoAction", res);
+    }
   });
+  // #ifdef H5
+  const menuBottomInfo = 0;
+  // #endif
+  // #ifdef MP-WEIXIN
   const menuBottomInfo = uni.getMenuButtonBoundingClientRect();
-  console.log("查看胶囊信息1：",menuBottomInfo);
-  store.dispatch("addmenuButtonInfoAction",menuBottomInfo)
-})
+  // #endif
+  console.log("查看胶囊信息1：", menuBottomInfo);
+  store.dispatch("addmenuButtonInfoAction", menuBottomInfo);
+  store.dispatch(
+    "addNavHeightAction",
+    (menuBottomInfo.top - systemInfo.statusBarHeight) * 2 +
+      menuBottomInfo.height +
+      systemInfo.statusBarHeight +
+      2
+  );
+});
 onShow(() => {
-  console.log('App Show')
-})
+  console.log("App Show");
+});
 onHide(() => {
-  console.log('App Hide')
-})
+  console.log("App Hide");
+});
 </script>
 <style lang="scss">
 @import "tailwindcss/base";
