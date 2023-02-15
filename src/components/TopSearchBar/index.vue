@@ -42,7 +42,8 @@
         class="menu-panel-head flex flex-col justify-end px-[20rpx] pb-[30rpx]"
         :style="{
           paddingTop: `${navHeight - menuBottomInfo.height || 30}px`,
-          backgroundColor: headBg
+          backgroundColor: headBg,
+          transition: 'background-color 0.5s linear'
         }"
       >
         <view
