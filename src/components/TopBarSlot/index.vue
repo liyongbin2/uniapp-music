@@ -17,8 +17,12 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
+export type TopBarSlotPropsType = {
+  customStyle: object;
+}
 
-import router from "@/utils/router";
+const props = defineProps<TopBarSlotPropsType>()
+
 const store = useStore();
 const systemInfo = computed(() => store.getters.getSystemInfo);
 const menuBottomInfo = computed(() => store.getters.getMenuButtonInfo);
@@ -27,8 +31,9 @@ const containerStyle = ref<any>({
   height: `${navHeight.value}px`,
   background: `linear-gradient(180deg, rgba(41,28,37,0.6) 14%, rgba(34,27,35,0.6) 91%)`,
   // #ifdef H5
-  marginTop: "30rpx"
+  marginTop: "30rpx",
   // #endif
+  ...props.customStyle
 });
 </script>
 

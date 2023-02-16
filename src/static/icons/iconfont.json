@@ -6,6 +6,41 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "8224854",
+      "name": "下载-线性",
+      "font_class": "xiazai-xianxing",
+      "unicode": "e60d",
+      "unicode_decimal": 58893
+    },
+    {
+      "icon_id": "4933367",
+      "name": "评论",
+      "font_class": "pinglun",
+      "unicode": "e745",
+      "unicode_decimal": 59205
+    },
+    {
+      "icon_id": "5772881",
+      "name": "多人",
+      "font_class": "peoples",
+      "unicode": "e619",
+      "unicode_decimal": 58905
+    },
+    {
+      "icon_id": "9567587",
+      "name": "more",
+      "font_class": "more",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "11536375",
+      "name": "分享",
+      "font_class": "fenxiang1",
+      "unicode": "e799",
+      "unicode_decimal": 59289
+    },
+    {
       "icon_id": "29570645",
       "name": "右箭头",
       "font_class": "youjiantou",
