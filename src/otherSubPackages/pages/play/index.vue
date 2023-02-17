@@ -57,14 +57,32 @@
               src="../../../static/swith.png"
             ></image>
           </view>
-          <scroll-view scroll-x enable-flex :style="{
-            display: 'flex',
-            flex: 1,
-            height: '100%'
-          }">
+          <scroll-view
+            scroll-x
+            scroll-with-animation
+            :scroll-left="scrollLeft"
+            @touchend="handleTouched($event, handlerTouched)"
+            @touchstart="handleTouchStart($event, handlerTouchStart)"
+            enable-flex
+            :style="{
+              display: 'flex',
+              flex: 1,
+              height: '100%'
+            }"
+          >
             <!-- 黑胶唱片 -->
-            <view class=" w-full flex items-start justify-center shrink-0"
-             v-for="(item,index) in needPlayList" :key="index">
+            <view
+              :class="
+                `record-container w-full flex items-start justify-center shrink-0 ${
+                  activeMusicIndex === index ? 'is-active is-animating' : ''
+                } ${activeMusicIndex - 1 === index ? 'is-animating' : ''}`
+              "
+              v-for="(item, index) in needPlayList"
+              :key="index"
+              :style="{
+                trnasform: `translateX(${item.translateX})`
+              }"
+            >
               <view
                 class="record record-rotate"
                 :style="{
@@ -72,27 +90,24 @@
                 }"
               >
                 <image
-                  mode="widthFix"
-                  class="w-full"
+                  class="w-[480rpx] h-[484rpx]"
                   src="../../../static/coverall.png"
                 ></image>
                 <image
                   class="absolute inset-1/2 translate-x-[-50%] translate-y-[-50%] w-[300rpx] h-[300rpx] rounded-full"
-                  src="http://p4.music.126.net/AWcDI5wc9fkS2bZt6wIm-Q==/109951163212638897.jpg?param=200y200"
+                  :src="item.img"
                 ></image>
               </view>
             </view>
           </scroll-view>
-          <view class="w-full">
-            <Tools />
-          </view>
+          <view class="w-full"><Tools /></view>
         </view>
       </block>
-      <block v-else>
-        <view>歌词界面</view>
-      </block>
+      <block v-else><view>歌词界面</view></block>
     </view>
-    <view class="bar z-10 h-[128rpx]" @tap="handlePlayMusic">底部</view>
+    <view class="bar z-10 h-[128rpx]" @tap="handlePlayMusic">
+      <ControlBar/>
+    </view>
   </view>
 </template>
 
@@ -100,21 +115,77 @@
 import TopBarSlot from "@/components/TopBarSlot";
 import FontIcon from "@/components/FontIcon";
 import Tools from "./components/Tools";
+import ControlBar from "./components/ControlBar";
 
-import { computed, ref } from "vue";
+import { computed, onMounted, ref, nextTick } from "vue";
 import { useStore } from "vuex";
 
+import { PlayStateEnum } from "@/store/module/musicPlayData/type";
+import { TouchedInfoType, DirectionEnum } from "@/hooks/useTouched/type";
+import useTouched from "@/hooks/useTouched";
+import useElementInfo from "@/hooks/useElementInfo";
 import { back } from "@/utils/router";
+import { debounced } from "@/utils/utils";
 
 const store = useStore();
+const { handleTouchStart, handleTouched } = useTouched();
 
 const play = computed(() => store.getters.getPlay);
-const needPlayList = ref([1,2,3,1]); // 当前播放歌曲以及前后两首播放歌曲（共三首）最后一个和第一个相同，无缝衔接轮播图
+const needPlayList = ref([
+  {
+    name: 1,
+    img:
+      "http://p4.music.126.net/AWcDI5wc9fkS2bZt6wIm-Q==/109951163212638897.jpg?param=200y200"
+  },
+  {
+    name: 2,
+    img:
+      "http://p3.music.126.net/rd0iSV6zxXOytgehfIaZ8g==/109951163693273653.jpg?param=200y200"
+  },
+  {
+    name: 3,
+    img:
+      "http://p3.music.126.net/FoF5_ROj-jU37263LhInsw==/109951163203287436.jpg?param=200y200"
+  }
+]); // 当前播放歌曲以及前后两首播放歌曲（共三首）最后一个和第一个相同，无缝衔接轮播图
+const recordDomInfo = ref<any>(null);
+const activeMusicIndex = ref<number>(0);
+const scrollLeft = ref<number>(0);
+onMounted(async () => {
+  const domInfo = await useElementInfo(".record-container");
+  if (!recordDomInfo.value) recordDomInfo.value = domInfo;
+});
 
 function handlePlayMusic() {
-  if (play.value) store.dispatch("addPlayAction", false);
-  else store.dispatch("addPlayAction", true);
+  if (play.value) store.dispatch("addPlayStateAction", PlayStateEnum.STOP);
+  else store.dispatch("addPlayStateAction", PlayStateEnum.PLAY);
 }
+// 触摸开始
+function handlerTouchStart(e: any, data: TouchedInfoType) {
+  store.dispatch("addPlayStateAction", PlayStateEnum.STOP);
+}
+// // 触摸结束
+function handlerTouched(e: any, data: TouchedInfoType) {
+  const { direction } = data;
+  const { width } = recordDomInfo.value;
+  if (!direction) return;
+  if (direction === DirectionEnum.LEFT) {
+    activeMusicIndex.value += 1;
+    if (activeMusicIndex.value >= needPlayList.value.length)
+      activeMusicIndex.value = needPlayList.value.length - 1;
+  } else {
+    activeMusicIndex.value -= 1;
+    if (activeMusicIndex.value < 0) activeMusicIndex.value = 0;
+  }
+  scrollLeft.value = activeMusicIndex.value * width;
+  store.dispatch("addPlayStateAction", PlayStateEnum.PLAY);
+  console.log("查看滚动的距离：", activeMusicIndex.value, scrollLeft.value);
+}
+const handleScroll = debounced((e: any) => {
+  console.log("滑动：", e);
+  const { scrollLeft: tScrollLeft } = e.detail;
+  scrollLeft.value = tScrollLeft;
+}, 50);
 </script>
 <style>
 page {
@@ -133,7 +204,7 @@ page {
   }
   100% {
     transform: scale(1.6);
-     border-color: rgba(255, 255, 255, 0);
+    border-color: rgba(255, 255, 255, 0);
     opacity: 0;
   }
 }
@@ -177,9 +248,20 @@ page {
   }
   .needle-point {
     background-color: rgba(0, 0, 0, 0.4);
+    &::after {
+      content: "";
+      @apply absolute rounded-full;
+      left: 50%;
+      top: 286rpx;
+      transform: translateX(-50%);
+      width: 440rpx;
+      height: 440rpx;
+      background-color: rgba(0, 0, 0, .2);
+      z-index: 0;
+    }
     .swith {
       transform-origin: 20rpx 20rpx;
-      transition: all 0.5s; 
+      transition: all 0.5s;
     }
     .play-music-needle-play {
       transform: rotate(30deg);
@@ -198,6 +280,9 @@ page {
       transition: rotate;
       transform: rotate(-30deg);
     }
+  }
+  .is-animating {
+    transition: transform 0.4s ease-in-out;
   }
   .record {
     @apply relative w-[480rpx] rounded-full mt-[180rpx];
