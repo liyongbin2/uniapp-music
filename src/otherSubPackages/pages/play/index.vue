@@ -1,11 +1,12 @@
 <template>
   <view
-    class="container relative bg-cover flex flex-col gap-[20rpx] h-full w-full z-10"
+    class="container"
     :style="{
       backgroundImage: `url('http://p4.music.126.net/AWcDI5wc9fkS2bZt6wIm-Q==/109951163212638897.jpg?param=200y200')`
     }"
   >
     <TopBarSlot
+      id="head"
       :customStyle="{
         background: 'transparent',
         position: 'relative',
@@ -40,16 +41,24 @@
         </view>
       </view>
     </TopBarSlot>
-    <view class="content flex-1 z-10 h-full w-full">
+    <view
+      class="content z-10 flex-1 w-full"
+      :style="{
+        height: `${contentHeight}px`
+      }"
+    >
       <block v-if="true">
-        <view class="flex flex-col justify-between items-center h-full w-full">
+        <view
+          id="needle"
+          class="flex flex-col justify-between items-center w-full"
+        >
           <!-- 黑胶播放器 -->
           <view
             class="needle-point w-[80rpx] h-[80rpx] relative rounded-full z-10"
           >
             <image
               :class="
-                `swith absolute ${
+                `swith absolute z-12 ${
                   play ? 'play-music-needle-play' : 'play-music-needle-stop'
                 }`
               "
@@ -63,17 +72,19 @@
             :scroll-left="scrollLeft"
             @touchend="handleTouched($event, handlerTouched)"
             @touchstart="handleTouchStart($event, handlerTouchStart)"
+            @scroll="handleScroll"
             enable-flex
             :style="{
               display: 'flex',
-              flex: 1,
-              height: '100%'
+              flexWrap: 'nowrap',
+              alignItems: 'cneter',
+              height: `${scrollHeight}px`
             }"
           >
             <!-- 黑胶唱片 -->
             <view
               :class="
-                `record-container w-full flex items-start justify-center shrink-0 ${
+                `record-container ${
                   activeMusicIndex === index ? 'is-active is-animating' : ''
                 } ${activeMusicIndex - 1 === index ? 'is-animating' : ''}`
               "
@@ -94,20 +105,18 @@
                   src="../../../static/coverall.png"
                 ></image>
                 <image
-                  class="absolute inset-1/2 translate-x-[-50%] translate-y-[-50%] w-[300rpx] h-[300rpx] rounded-full"
+                  class="absolute inset-1/2 translate-x-[-50%] translate-y-[-50%] w-[304rpx] h-[304rpx] rounded-full"
                   :src="item.img"
                 ></image>
               </view>
             </view>
           </scroll-view>
-          <view class="w-full"><Tools /></view>
+          <Tools id="tool" />
         </view>
       </block>
       <block v-else><view>歌词界面</view></block>
     </view>
-    <view class="bar z-10 h-[128rpx]" @tap="handlePlayMusic">
-      <ControlBar/>
-    </view>
+    <view id="ctl" class="bar z-10"><ControlBar /></view>
   </view>
 </template>
 
@@ -117,7 +126,7 @@ import FontIcon from "@/components/FontIcon";
 import Tools from "./components/Tools";
 import ControlBar from "./components/ControlBar";
 
-import { computed, onMounted, ref, nextTick } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useStore } from "vuex";
 
 import { PlayStateEnum } from "@/store/module/musicPlayData/type";
@@ -131,6 +140,7 @@ const store = useStore();
 const { handleTouchStart, handleTouched } = useTouched();
 
 const play = computed(() => store.getters.getPlay);
+const sysInfo = computed(() => store.getters.getSystemInfo);
 const needPlayList = ref([
   {
     name: 1,
@@ -151,23 +161,42 @@ const needPlayList = ref([
 const recordDomInfo = ref<any>(null);
 const activeMusicIndex = ref<number>(0);
 const scrollLeft = ref<number>(0);
+const contentHeight = ref<number>(0);
+const scrollHeight = ref<number>(0);
 onMounted(async () => {
   const domInfo = await useElementInfo(".record-container");
   if (!recordDomInfo.value) recordDomInfo.value = domInfo;
 });
 
-function handlePlayMusic() {
-  if (play.value) store.dispatch("addPlayStateAction", PlayStateEnum.STOP);
-  else store.dispatch("addPlayStateAction", PlayStateEnum.PLAY);
+onMounted(() => {
+  calcContentHeight();
+});
+async function calcContentHeight() {
+  const [headDomInfo, ctlDomInfo,deedleDomInfo,toolDomInfo]:any[] = await Promise.all([
+    useElementInfo("#head"),
+    useElementInfo("#ctl"),
+    useElementInfo("#needle"),
+    useElementInfo("#tool"),
+  ]);
+  console.log("查看这两个dom信息", headDomInfo, ctlDomInfo, sysInfo.value);
+  contentHeight.value =
+    sysInfo.value.windowHeight - (headDomInfo?.height + ctlDomInfo?.height) ?? 400;
+  scrollHeight.value = contentHeight.value - (deedleDomInfo?.height+toolDomInfo?.height)
 }
+
+
 // 触摸开始
 function handlerTouchStart(e: any, data: TouchedInfoType) {
-  store.dispatch("addPlayStateAction", PlayStateEnum.STOP);
+
 }
 // // 触摸结束
 function handlerTouched(e: any, data: TouchedInfoType) {
   const { direction } = data;
-  const { width } = recordDomInfo.value;
+  console.log("触摸结束",direction);
+  handlePlayNextOrPreMusicAnimation(direction as DirectionEnum|null)
+}
+function handlePlayNextOrPreMusicAnimation(direction:DirectionEnum|null) {
+   const { width } = recordDomInfo.value;
   if (!direction) return;
   if (direction === DirectionEnum.LEFT) {
     activeMusicIndex.value += 1;
@@ -178,14 +207,14 @@ function handlerTouched(e: any, data: TouchedInfoType) {
     if (activeMusicIndex.value < 0) activeMusicIndex.value = 0;
   }
   scrollLeft.value = activeMusicIndex.value * width;
-  store.dispatch("addPlayStateAction", PlayStateEnum.PLAY);
+  setTimeout(() => {
+    store.dispatch("addPlayStateAction", PlayStateEnum.PLAY);
+  },500)
   console.log("查看滚动的距离：", activeMusicIndex.value, scrollLeft.value);
 }
 const handleScroll = debounced((e: any) => {
-  console.log("滑动：", e);
-  const { scrollLeft: tScrollLeft } = e.detail;
-  scrollLeft.value = tScrollLeft;
-}, 50);
+  store.dispatch("addPlayStateAction", PlayStateEnum.STOP);
+}, 50,true);
 </script>
 <style>
 page {
@@ -221,7 +250,7 @@ page {
   }
 }
 .container {
-  z-index: 10;
+  @apply relative bg-cover flex flex-col gap-[20rpx] w-full z-10 h-screen overflow-y-hidden;
   &::after {
     content: "";
     @apply absolute inset-0;
@@ -248,17 +277,6 @@ page {
   }
   .needle-point {
     background-color: rgba(0, 0, 0, 0.4);
-    &::after {
-      content: "";
-      @apply absolute rounded-full;
-      left: 50%;
-      top: 286rpx;
-      transform: translateX(-50%);
-      width: 440rpx;
-      height: 440rpx;
-      background-color: rgba(0, 0, 0, .2);
-      z-index: 0;
-    }
     .swith {
       transform-origin: 20rpx 20rpx;
       transition: all 0.5s;
@@ -283,6 +301,23 @@ page {
   }
   .is-animating {
     transition: transform 0.4s ease-in-out;
+  }
+  scroll-view {
+    @apply relative;
+    &::after {
+      content: "";
+      @apply absolute rounded-full;
+      left: 50%;
+      top: 190rpx;
+      transform: translateX(-50%);
+      width: 440rpx;
+      height: 440rpx;
+      background-color: rgba(0, 0, 0, 0.2);
+      z-index: -1;
+    }
+  }
+  .record-container {
+    @apply w-full flex items-start justify-center shrink-0 relative;
   }
   .record {
     @apply relative w-[480rpx] rounded-full mt-[180rpx];

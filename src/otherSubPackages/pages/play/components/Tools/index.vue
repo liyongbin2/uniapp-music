@@ -1,6 +1,6 @@
 <template>
   <view
-    class="container box-border flex justify-between items-center w-full py-[30rpx] px-[80rpx]"
+    class="container box-border flex justify-between items-center w-screen py-[30rpx] px-[80rpx]"
   >
     <view
       :class="

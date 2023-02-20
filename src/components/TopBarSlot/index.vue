@@ -18,7 +18,7 @@
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
 export type TopBarSlotPropsType = {
-  customStyle: object;
+  customStyle?: object;
 }
 
 const props = defineProps<TopBarSlotPropsType>()
