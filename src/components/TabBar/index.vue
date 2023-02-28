@@ -1,27 +1,33 @@
 <template>
-  <view class="container fixed bottom-0 left-0 right-0 flex items-center">
-    <view
-      class="flex flex-col items-center justify-center box-border flex-1 gap-[10rpx] p-[20rpx] h-[128rpx]"
-      v-for="(item, index) in list"
-      :key="item.text"
-      @tap="redirect(item.pagePath)"
-    >
-      <image
-        class="w-[48rpx] h-[48rpx]"
-        :src="index === activeTabIndex ? item.selectedIconPath : item.iconPath"
-      ></image>
-      <text
-        :style="{
-          color: index === activeTabIndex ? '#E93323' : '#ffffff'
-        }"
+  <view class="container fixed bottom-0 left-0 right-0">
+    <PlayBar />
+    <view class="tab-container flex items-center">
+      <view
+        class="flex flex-col items-center justify-center box-border flex-1 gap-[10rpx] p-[20rpx] h-[128rpx]"
+        v-for="(item, index) in list"
+        :key="item.text"
+        @tap="redirect(item.pagePath)"
       >
-        {{ item.text }}
-      </text>
+        <image
+          class="w-[48rpx] h-[48rpx]"
+          :src="
+            index === activeTabIndex ? item.selectedIconPath : item.iconPath
+          "
+        ></image>
+        <text
+          :style="{
+            color: index === activeTabIndex ? '#E93323' : '#ffffff'
+          }"
+        >
+          {{ item.text }}
+        </text>
+      </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
+import PlayBar from "@/components/PlayBar";
 import { onMounted, ref } from "vue";
 
 import { redirect, getRoute } from "@/utils/router";
@@ -62,8 +68,10 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .container {
-  background-color: #21212b;
-  padding-bottom: constant(safe-area-inset-bottom);
-  padding-bottom: env(safe-area-inset-bottom);
+  .tab-container {
+    background-color: #21212b;
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 </style>

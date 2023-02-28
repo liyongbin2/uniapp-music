@@ -3,8 +3,10 @@ import { onLaunch, onShow, onHide } from "@dcloudio/uni-app";
 import { computed } from "vue";
 import { useStore } from "vuex";
 
-const store = useStore();
+import useAudio from "@/hooks/useAudio";
 
+const store = useStore();
+const audio = useAudio();
 const navHeight = computed(() => store.getters.getNavHeight);
 onLaunch(() => {
   let systemInfo: any = {};
@@ -29,6 +31,7 @@ onLaunch(() => {
       systemInfo.statusBarHeight +
       2
   );
+  store.dispatch("addAudioAction", audio); // 初始化播放器
 });
 onShow(() => {
   console.log("App Show");
