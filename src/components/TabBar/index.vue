@@ -68,6 +68,7 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .container {
+  z-index: 9999;
   .tab-container {
     background-color: #21212b;
     padding-bottom: constant(safe-area-inset-bottom);

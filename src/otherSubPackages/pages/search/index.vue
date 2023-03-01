@@ -58,8 +58,8 @@
         mode="widthFix"
         src="https://image.woshipm.com/wp-files/2018/04/z8rOb4Ed28OkfWXv0Vd5.jpg"
       ></image>
-      <view class="absolute top-1 right-1" @click="handleOpenPop">
-        <FontIcon icon="&#xe609;" size="32rpx" />
+      <view class="absolute top-1 right-1">
+        <FontIcon icon="&#xe609;" size="32rpx" @click="handleOpenPop" />
       </view>
     </view>
     <!-- 猜你喜欢 -->
@@ -146,11 +146,8 @@
             {{ item }}
           </text>
         </view>
-        <view
-          class="bg-[#98989a] rounded-full close-pop-btn"
-          @tap="handleCloseAd"
-        >
-          <FontIcon icon="&#xeaf2;" size="26rpx" />
+        <view class="bg-[#98989a] rounded-full close-pop-btn">
+          <FontIcon icon="&#xeaf2;" size="26rpx" @click="handleCloseAd(false)" />
         </view>
       </view>
     </Popup>
@@ -219,12 +216,14 @@ function handleOpenPop() {
   console.log("打开弹窗");
   openPop.value = true
 }
-function handleCloseAd() {
+function handleCloseAd(isTrueCloseAd:boolean = true) {
   console.log("点击关闭广告");
   handleClosePop()
-  setTimeout(function() {
-    isCloseAd.value = true;
-  }, 500);
+  if(isTrueCloseAd) {
+    setTimeout(function() {
+      isCloseAd.value = true;
+    }, 500);
+  }
 }
 function handleClosePop() {
   openPop.value = false;

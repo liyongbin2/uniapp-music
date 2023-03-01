@@ -42,7 +42,11 @@ const emits = defineEmits(["close"]);
 const openPop = ref<boolean>(false);
 const animationName = ref<string>("");
 const cStyle = ref<any>({
-  top: props.position === PopupPositionEnum.center ? props.officeTop : "0",
+  top: props.position === PopupPositionEnum.center
+  ? props.officeTop 
+  : props.position === PopupPositionEnum.left || props.position === PopupPositionEnum.right
+  ? "0"
+  : "",
   ...props.customStyle
 });
 const style = computed(() => ({
@@ -85,27 +89,28 @@ function handleClosePop() {
   transform: translate(-50%, -50%);
   min-width: 300rpx;
   min-height: 300rpx;
-  background-color: #ffffff;
+  background-color: #1c1c1e;
 }
 .pop-left {
   left: 0;
   top: 0;
   bottom: var(--window-bottom);
   min-width: 300rpx;
-  background-color: #ffffff;
+  background-color: #1c1c1e;
 }
 .pop-right {
   right: 0;
   top: 0;
   bottom: var(--window-bottom);
   min-width: 300rpx;
-  background-color: #ffffff;
+  background-color: #1c1c1e;
 }
 .pop-bottom {
   left: 0;
+  right: 0;
   bottom: 0;
   min-height: 300rpx;
-  background-color: #ffffff;
+  background-color: #1c1c1e;
 }
 .container {
   @apply fixed inset-0;

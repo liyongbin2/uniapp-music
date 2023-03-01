@@ -1,6 +1,8 @@
 <template>
-  <view class="container" @tap="playOrStopMusic">
+  <view class="container relative z-10">
     <canvas
+      v-show="!hide"
+      @tap.native.stop="playOrStopMusic"
       id="canvas"
       canvas-id="canvas"
       :style="{
@@ -12,8 +14,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, getCurrentInstance, onMounted, ref, nextTick } from "vue";
+import { computed, getCurrentInstance, onMounted, ref } from "vue";
 import { useStore } from "vuex";
+
+type AnnularPlayBarProp = {
+  hide: boolean;
+};
+
+withDefaults(defineProps<AnnularPlayBarProp>(), {
+  hide: false
+});
 
 const store = useStore();
 const isPlay = computed(() => store.getters.getPlay);
@@ -29,13 +39,16 @@ const circlePositonX = ref<number>(canvasWidth.value / 4); // 圆心x坐标
 const circlePositonY = ref<number>(canvasHeight.value / 4); // 圆心y坐标
 
 onMounted(() => {
+  const _this = getCurrentInstance() as any;
+  ctx.value = uni.createCanvasContext("canvas", _this);
   init();
 });
 
 function init() {
-  const _this = getCurrentInstance() as any;
-  ctx.value = uni.createCanvasContext("canvas", _this);
+  ctx.value.clearRect(0, 0, canvasWidth.value, canvasHeight.value);
+  ctx.value.draw();
   drawCircle(ctx.value);
+  drawRing(ctx.value, 0);
 }
 function drawCircle(ctx: any) {
   ctx.beginPath();
@@ -51,11 +64,9 @@ function drawCircle(ctx: any) {
   ctx.stroke();
   if (isPlay.value) drawPlayBtn(ctx);
   else drawStopBtn(ctx);
-  ctx.save();
   ctx.draw();
 }
 function drawRing(ctx: any, percent: number) {
-  console.log("绘制进度",percent);
   const anglePerSec = (2 * Math.PI) / (100 / percent);
   endAngle.value = startAngle.value + anglePerSec;
   ctx.beginPath();
@@ -74,9 +85,10 @@ function drawRing(ctx: any, percent: number) {
 function drawStopBtn(ctx: any) {
   // 等边三角形边长
   const b = 7;
+  // 等边三角形左上角顶点与圆心为原点建立的直角坐标系组成的钝角三角形的对边长度
   const a = Math.abs((b / 2) * Math.tan((30 * Math.PI) / 180));
+  // 邻边长度
   const c = Math.abs(b / 2 / Math.cos((30 * Math.PI) / 180));
-  console.log("a,b,c", a, b, c);
   ctx.beginPath();
   ctx.moveTo(
     Math.round(circlePositonX.value - a),
@@ -104,16 +116,21 @@ function drawPlayBtn(ctx: any) {
   ctx.stroke();
 }
 async function playOrStopMusic() {
+  // store.dispatch("switchMusicAction","next")
+  // return
   await store.dispatch("addPlayAction", !isPlay.value);
   drawCircle(ctx.value);
-  if(isPlay.value) {
-    if(timer.value)clearInterval(timer.value)
+  if (isPlay.value) {
+    if (timer.value) clearInterval(timer.value);
+    console.log("设置周期定时器");
     timer.value = setInterval(() => {
       drawRing(ctx.value, percent.value);
-      if (percent.value > 100) clearInterval(timer.value);
+      if (percent.value > 99) {
+        init();
+        clearInterval(timer.value);
+      }
     }, 1000);
-  } 
-  
+  }
 }
 </script>
 

@@ -1,6 +1,6 @@
 <template>
   <span
-    @tap="emit('click')"
+    @tap.native.stop="emit('click')"
     :class="
       `iconfont text-white ${className}`
     "
