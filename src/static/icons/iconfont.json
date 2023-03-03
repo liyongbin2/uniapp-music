@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "4553735",
+      "name": "投屏",
+      "font_class": "touping",
+      "unicode": "e7de",
+      "unicode_decimal": 59358
+    },
+    {
+      "icon_id": "9384077",
+      "name": "声音",
+      "font_class": "shengyin",
+      "unicode": "e60b",
+      "unicode_decimal": 58891
+    },
+    {
       "icon_id": "18939003",
       "name": "播放中",
       "font_class": "bofangzhong",

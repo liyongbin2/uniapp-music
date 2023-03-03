@@ -23,3 +23,26 @@ export const debounced = (
     }, delay);
   };
 };
+
+export const throttle = (func: Function, delay: number = 200): any => {
+  let lastTime: any
+  let timer: NodeJS.Timeout
+  const self = this
+  return function () {
+    let args = arguments
+    // 记录当前函数触发的时间
+    let nowTime = Date.now()
+    if (lastTime && nowTime - lastTime < delay) {
+      clearTimeout(timer)
+      timer = setTimeout(function () {
+        // 记录上一次函数触发的时间
+        lastTime = nowTime
+        // 修正this指向问题
+        func.apply(self, args)
+      }, delay)
+    } else {
+      lastTime = nowTime
+      func.apply(self, args)
+    }
+  }
+}

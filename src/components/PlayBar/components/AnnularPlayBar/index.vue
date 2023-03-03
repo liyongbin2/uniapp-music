@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, getCurrentInstance, onMounted, ref } from "vue";
+import { computed, getCurrentInstance, onMounted, ref, watch } from "vue";
 import { useStore } from "vuex";
 
 type AnnularPlayBarProp = {
@@ -28,6 +28,7 @@ withDefaults(defineProps<AnnularPlayBarProp>(), {
 const store = useStore();
 const isPlay = computed(() => store.getters.getPlay);
 const percent = computed(() => store.getters.getPercent);
+const curPlayMusicIndex = computed(() => store.getters.getCurPlayMusicIndex);
 const ctx = ref<any>(null);
 const canvasWidth = ref<number>(100);
 const canvasHeight = ref<number>(100);
@@ -48,7 +49,7 @@ function init() {
   ctx.value.clearRect(0, 0, canvasWidth.value, canvasHeight.value);
   ctx.value.draw();
   drawCircle(ctx.value);
-  drawRing(ctx.value, 0);
+  drawRing(ctx.value, percent.value);
 }
 function drawCircle(ctx: any) {
   ctx.beginPath();
@@ -116,22 +117,43 @@ function drawPlayBtn(ctx: any) {
   ctx.stroke();
 }
 async function playOrStopMusic() {
-  // store.dispatch("switchMusicAction","next")
-  // return
   await store.dispatch("addPlayAction", !isPlay.value);
   drawCircle(ctx.value);
   if (isPlay.value) {
     if (timer.value) clearInterval(timer.value);
-    console.log("设置周期定时器");
     timer.value = setInterval(() => {
       drawRing(ctx.value, percent.value);
       if (percent.value > 99) {
-        init();
+        // init();
         clearInterval(timer.value);
       }
     }, 1000);
   }
 }
+
+watch(
+  () => isPlay.value,
+  (n:boolean) => {
+    if (!n) init();
+  }
+);
+
+watch(
+  () => curPlayMusicIndex.value,
+  (n:number, p:number) => {
+    if (n !== p && isPlay.value) {
+      init();
+      if (timer.value) clearInterval(timer.value);
+      timer.value = setInterval(() => {
+        drawRing(ctx.value, percent.value);
+        if (percent.value > 99) {
+          init();
+          clearInterval(timer.value);
+        }
+      }, 1000);
+    }
+  }
+);
 </script>
 
 <style lang="scss" scoped>

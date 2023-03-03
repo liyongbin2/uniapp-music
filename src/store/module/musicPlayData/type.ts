@@ -2,20 +2,25 @@ export enum PlayStateEnum {
   PLAY = "Play", // 播放
   STOP = "Stop", // 停止
   PAUSE = "pause", // 暂停
-  RESET = "Reset", // 重置
+  RESET = "Reset" // 重置
 }
 
 export enum PlayListStateEnum {
   SINGLE_LOOP = "Single Loop", // 单曲循环
   LIST_LOOP = "List Loop", // 循环列表
   LOOP = "loop", // 列表无限循环
-  RANDOM = "random", // 随机播放
+  RANDOM = "random" // 随机播放
 }
 
 export enum SwitchMusicState {
   PRE = "pre",
   NEXT = "next"
 }
+
+export type PercentType = {
+  percent: number;
+  seek: boolean;
+};
 
 export type MusicPlayDataType = {
   play: boolean; // 播放音乐

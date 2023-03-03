@@ -1,6 +1,6 @@
 import { getCurrentInstance } from "vue";
 
-export default function(selector: string) {
+export default function(selector: string):Promise<UniApp.NodeInfo> {
   return new Promise((res, rej) => {
     try {
       const _this = getCurrentInstance();
